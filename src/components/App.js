@@ -9,14 +9,22 @@ class App extends React.Component {
     images: [],
     term: '',
     perPage: 10,
+    loading: false,
   };
 
-  fetchUnsplashData = async (term) => {
-    const resp = await unsplash.get('/search/photos', {
-      params: { query: this.state.term, per_page: this.state.perPage },
+  fetchUnsplashData = (term) => {
+    this.setState({ loading: true }, () => {
+      unsplash
+        .get('/search/photos', {
+          params: { query: this.state.term, per_page: this.state.perPage },
+        })
+        .then((result) =>
+          this.setState({
+            images: result.data.results,
+            loading: false,
+          })
+        );
     });
-
-    this.setState({ images: resp.data.results });
   };
 
   onSearchSubmit = (term) => {
@@ -47,7 +55,7 @@ class App extends React.Component {
         <SearchBar onSearchSubmit={this.onSearchSubmit} />
         <ImageList images={this.state.images} />
         {this.state.images.length > 0 && (
-          <LoadMore onLoadMore={this.onLoadMore} />
+          <LoadMore onLoadMore={this.onLoadMore} loading={this.state.loading} />
         )}
       </div>
     );
